@@ -9,6 +9,7 @@ import (
 )
 
 const paginationMaxItems = 500
+const paginationDefaultItems = 50
 
 // ParsePagination parses limit and page from *http.Request with given limits and defaults.
 func ParsePagination(r *http.Request) (page, itemsPerPage int) {
@@ -23,10 +24,10 @@ func ParsePagination(r *http.Request) (page, itemsPerPage int) {
 	}
 
 	if limitParam := r.URL.Query().Get("per_page"); limitParam == "" {
-		itemsPerPage = paginationMaxItems
+		itemsPerPage = paginationDefaultItems
 	} else {
 		if limit64, err := strconv.ParseInt(limitParam, 10, 64); err != nil {
-			itemsPerPage = paginationMaxItems
+			itemsPerPage = paginationDefaultItems
 		} else {
 			itemsPerPage = int(limit64)
 		}
@@ -50,7 +51,7 @@ func ParsePagination(r *http.Request) (page, itemsPerPage int) {
 func header(u *url.URL, rel string, limit, page int64) string {
 	q := u.Query()
 	q.Set("per_page", fmt.Sprintf("%d", limit))
-	q.Set("page", fmt.Sprintf("%d", page))
+	q.Set("page", fmt.Sprintf("%d", page/limit))
 	u.RawQuery = q.Encode()
 	return fmt.Sprintf("<%s>; rel=\"%s\"", u.String(), rel)
 }
